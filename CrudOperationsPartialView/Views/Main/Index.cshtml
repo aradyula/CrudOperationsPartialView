@@ -1,0 +1,241 @@
+﻿@model CrudOperationsPartialView.Models.Product
+<div class="row">
+    <div class="col-sm-8">
+        <h2>Index</h2>
+    </div>
+    <div class="col-sm-4">
+        <p>
+            <a class="btn btn-success pull-right" data-toggle="modal" data-target="#productDetails" style="margin:10px" id="add_button" title="Add Product">Add Product</a>
+        </p>
+    </div>
+</div>
+<div class="modal fade" id="productDetails" data-backdrop="static" data-keyboard="false">
+    
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header col-12">
+                <div class="col-sm-6">
+                    <h4 class="modal-title" id="title"> Add Product Details</h4>
+                </div>
+                <div class="col-sm-6">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    @Html.HiddenFor(model => model.cid)
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            @Html.LabelFor(model => model.name, new { @class = "control-label" })<span style="color:red">*</span>
+                        </div>
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.name, new { htmlAttributes = new { @class = "form-control", @autofocus = "" } })
+
+
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            @Html.LabelFor(model => model.category, new { @class = "control-label" })<span style="color:red">*</span>
+                        </div>
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.category, new { htmlAttributes = new { @class = "form-control" } })
+
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            @Html.LabelFor(model => model.price, new { @class = "control-label" })<span style="color:red">*</span>
+                        </div>
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.price, new { htmlAttributes = new { @class = "form-control", @max = DateTime.Today.ToString("yyyy-MM-dd") } })
+
+                        </div>
+
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            @Html.LabelFor(model => model.brand, new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.brand, new { htmlAttributes = new { @class = "form-control" } })
+
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            @Html.LabelFor(model => model.rating, new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-8">
+                            @Html.EditorFor(model => model.rating, new { htmlAttributes = new { @class = "form-control" } })
+
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+
+                <input type="button" value="Save" class="btn btn-primary" id="savebutton" onclick="Save()" data-dismiss="modal" />
+                <input type="button" value="Cancel" class="btn btn-default" data-dismiss="modal" />
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    
+
+    <div class="col-sm-4" id="pie_container">
+        @{ Html.RenderPartial("_ProductsPieChart");}
+    </div>
+    <div class="col-sm-8">
+
+        <table class="table" id="products_table">
+            <thead>
+                <tr>
+                    <th>Sno</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Brand</th>
+                    <th>Rating</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+        </table>
+        <div class="inline mv">
+           
+            <div data-sparkline="" values="8,8" data-type="pie" data-height="50" data-slice-colors="[&quot;#edf1f2&quot;, &quot;#ff902b&quot;]" class="sparkline">
+                @*<div data-sparkline="" values="20,80" data-type="pie" data-height="100" data-slice-colors="[&quot;#edf1f2&quot;, &quot;#23b7e5&quot;]" class="sparkline">*@
+                <canvas width="50" height="50" style="display: inline-block; width: 50px; height: 50px; vertical-align: top;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+@section scripts{
+    @*<script src="~/Scripts/jquery-3.3.1.min.js"></script>*@
+    <script src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script>
+        var dt;
+        $(document).ready(function () {
+            debugger;
+            dt = $("#products_table").DataTable({
+                "ajax": {
+                    "url": "/Main/GetProducts",
+                    "type": "GET",
+                    "datatype": "json",
+                    "dataSrc": "",
+                },
+                "columns": [
+                    {
+                        render: function (data, type, row, meta) {
+                            return meta.row + meta.settings.iDisplayStart + 1;
+                        }
+                    },
+                    { data: "name" },
+                    { data: "category" },
+                    { data: "price" },
+                    { data: "brand" },
+                    { data: "rating" },
+                    { "data": "cid", render: function (data) {
+                        return "<a class='btn btn-info' id='edit_button' data-toggle='modal' data-target='#productDetails' title='Edit' onclick=Edit('@Url.Action("Edit","Main")/" + data +"')>Edit!!</a>&nbsp;<a class='btn btn-danger' title='Delete' id='delete_button' onclick=Delete('"+data+"')>Delete!</a>";
+                        }
+                    },
+                ],
+                "language": {
+                    "emptyTable":"No data found,Please add products!"
+                },
+                "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                    $("td:first", nRow).html(iDisplayIndex + 1);
+                    return nRow;
+                },
+            });
+            $('#add_button').on('click', function () {
+                debugger;
+                $('#title').text('Add Product');
+                $("#cid").val('');
+                $("#name").val('');
+                $("#category").val('');
+                $("#price").val('');
+                $("#brand").val('');
+                $("#rating").val('');
+            });
+        });
+        function Delete(id) {
+            debugger;
+            console.log("DeleteRecord?")
+            if (confirm('Are You Sure to Delete this Product?')) {
+                debugger;
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Delete","Main")/'+id ,
+                    success: function (data) {
+                        if (data.success) {
+                            debugger;
+                            dt.ajax.reload();
+                            $('#pie_container').load('@Url.Content("~/Main/Partial")')
+                            alert(data.message);
+
+                        }
+                        
+                    }
+                })
+
+            }
+
+
+        }
+
+        function Save() {
+            debugger;
+            var formDetails = $("#productForm").serialize();
+
+
+            $.ajax({
+                type: "POST",
+                url: "/Main/Save",
+                data: formDetails,
+                success: function (response) {
+                    if (response) {
+                        dt.ajax.reload();
+                        $('#pie_container').load('@Url.Content("~/Main/Partial")');
+                        alert(response.message);
+                        $('#productForm')[0].reset();
+
+                    }
+                    $('#productDetails').modal("hide"); 
+                }
+                 
+            });
+        }
+        function Edit(url) {
+            debugger;
+            $('#title').text('Edit Product');
+            var formDetails = $("#productForm").serialize();
+            $.ajax({
+                type: "GET",
+                url: url,
+                datatype: "json",
+                success: function (formDetails) {
+                    //debugger;
+                    $("#cid").val(formDetails.cid);
+                    $("#name").val(formDetails.name);
+                    $("#category").val(formDetails.category);
+                    $("#price").val(formDetails.price);
+                    $("#brand").val(formDetails.brand);
+                    $('#rating').val(formDetails.rating)
+                }
+            });
+
+
+
+        }
+
+    </script>
+}

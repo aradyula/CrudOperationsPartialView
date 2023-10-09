@@ -1,0 +1,65 @@
+﻿<h2 style="position:center">Pie Chart of Products</h2>
+
+<div id="pieChart"></div>
+
+
+
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script src="~/Scripts/c3.js"></script>
+<script src="~/Scripts/d3.js"></script>
+    <script type="text/javascript">
+        debugger;
+        $(document).ready(function () {
+            $.ajax({
+                type: "GET",
+                url: "/Main/GetGroupedProducts",
+                data: {},
+                dataType: "json",
+                success: function (response) {
+                    console.log(response);
+                    successFunc(response);
+                }
+            });
+            function successFunc(jsondata) {
+
+                var data = {};
+                var productNames = [];
+                jsondata.forEach(function (e) {
+                    debugger;
+                    
+
+                    productNames.push(e.category);
+                    
+                    data[e.category] = e.Total;
+                })
+               
+                var chart = c3.generate({
+                    bindto: '#pieChart',
+                    data: {
+                        selection: {
+                            grouped: true
+                        },
+                        json: [data],
+                        keys: {
+                            value: productNames,
+                        },
+                        type: 'pie'
+                    },
+                    //color: {
+                    //    pattern: ['#1f77b4', '#aec7e8', '#ff7f0e']
+                    //},
+                    pie: {
+                        label: {
+                            format: function (value, ratio, id) {
+                                return value;
+                            }
+                        }
+                    }
+                });
+                
+                
+            }
+
+        });
+    </script>
+
